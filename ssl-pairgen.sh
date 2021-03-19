@@ -35,6 +35,16 @@ echo "$CLIENT_CSR" | cfssl gencert \
   -ca-key="${CA_NAME}-key.pem" \
   -config=config/ca-config.json \
   -profile=client - | cfssljson -bare $USER_NAME
-
 rm ${USER_NAME}.csr
-#rm -f $CA_NAME-key.pem
+
+rm -f $CA_NAME-key.pem
+
+openssl pkcs12 -export -out ${USER_NAME}.p12 \
+  -inkey ${USER_NAME}-key.pem \
+  -in ${USER_NAME}.pem \
+  -certfile $CA_NAME-ca.crt
+
+rm ${USER_NAME}-key.pem
+rm ${USER_NAME}.pem
+
+echo "Created User CA pair '${CA_NAME}-ca.crt' and '${USER_NAME}.p12'"
