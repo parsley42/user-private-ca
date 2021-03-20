@@ -9,11 +9,8 @@ CLIENT_CSR=$(cat <<EOF
   },
   "names": [
     {
-      "C": "$CLIENT_C",
-      "L": "$CLIENT_L",
-      "O": "$CLIENT_O",
-      "OU": "$CLIENT_OU",
-      "ST": "$CLIENT_ST"
+      "O": "$CP_O",
+      "OU": "$CP_OU"
     }
   ]
 }

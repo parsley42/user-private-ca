@@ -1,17 +1,18 @@
 CA_CSR=$(cat <<EOF
 {
   "CN": "$CA_NAME",
+  "CA": {
+    "expiry": "${CA_EXPIRE}h",
+    "pathlen": 0
+  },
   "key": {
     "algo": "rsa",
     "size": 2048
   },
   "names": [
     {
-      "C": "$CA_C",
-      "L": "$CA_L",
-      "O": "$CA_O",
-      "OU": "$CA_OU",
-      "ST": "$CA_ST"
+      "O": "$CP_O",
+      "OU": "$CP_OU"
     }
   ]
 }

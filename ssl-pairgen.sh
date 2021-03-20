@@ -1,30 +1,31 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # ssl-pairgen.sh (a play on ssh-keygen)
 
-if [ ! -e ".profile" ]
-then
-    echo "Missing '.profile'"
-    exit 1
-fi
-
 # Defaults
 CA_NAME="UserCA"
-CA_C="US"
 USER_NAME="user"
-CLIENT_EXPIRE="8760h"
+CP_O="Cluster Owners"
+CP_OU="Cluster Administrators"
+CLIENT_EXPIRE="8760" # hours in a year
 
-. .profile
+if [ -e ".profile" ]
+then
+  . .profile
+fi
 
-. config/ca-csr.sh     # Define CA_CSR
-. config/ca-config.sh  # Create config/ca-config.json
-. config/client-csr.sh # Define CLIENT_CSR
+CA_EXPIRE=$(( $CLIENT_EXPIRE + 1 ))
+
+. config/ca-csr.sh        # Define CA_CSR
+. config/client-csr.sh    # Define CLIENT_CSR
+. config/client-config.sh # Create config/client-config.json
 
 echo "Generating CA $CA_NAME"
 echo "$CA_CSR" | cat
 
 # Generate $CA_NAME-ca.crt and temporary CA key
-echo "$CA_CSR" | cfssl gencert -initca - | cfssljson -bare $CA_NAME
+echo "$CA_CSR" | cfssl gencert \
+  -initca - | cfssljson -bare $CA_NAME
 rm $CA_NAME.csr
 mv $CA_NAME.pem $CA_NAME-ca.crt
 
@@ -33,8 +34,7 @@ echo "$CLIENT_CSR" | cfssl gencert \
   -cn="$USER_NAME" \
   -ca="${CA_NAME}-ca.crt" \
   -ca-key="${CA_NAME}-key.pem" \
-  -config=config/ca-config.json \
-  -profile=client - | cfssljson -bare $USER_NAME
+  -config=config/client-config.json - | cfssljson -bare $USER_NAME
 rm ${USER_NAME}.csr
 
 rm -f $CA_NAME-key.pem
@@ -44,7 +44,6 @@ openssl pkcs12 -export -out ${USER_NAME}.p12 \
   -in ${USER_NAME}.pem \
   -certfile $CA_NAME-ca.crt
 
-rm ${USER_NAME}-key.pem
-rm ${USER_NAME}.pem
+mv ${USER_NAME}.pem ${USER_NAME}.crt
 
-echo "Created User CA pair '${CA_NAME}-ca.crt' and '${USER_NAME}.p12'"
+echo "Created User CA pair '${CA_NAME}-ca.crt' and '${USER_NAME}.p12'; '${USER_NAME}.crt' informational."

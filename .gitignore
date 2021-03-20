@@ -4,4 +4,5 @@
 *.yaml
 *.pem
 *.csr
+*.json
 .profile
